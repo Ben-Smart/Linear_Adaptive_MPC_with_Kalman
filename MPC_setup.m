@@ -40,22 +40,23 @@ clear; clc;
 
 %% parameters
 
-Par.time.Ts = 0.1;                    % sample time of the controller(h)
+Par.time.Ts = 0.01;                   % sample time of the controller(h)
 Par.time.dt = 0.01;                   % Time step for the ODE solver(h)
 Par.time.Tend =50;                    % final runtime (h)
 
 Par.sim.x_hat = X0;                   % the state of the system at time j
 Par.sim.x0 = X0;                      % initial state
-Par.sim.N = 100;                      % steps in the prediction horizon
+Par.sim.N = 50;                       % steps in the prediction horizon
 Par.sim.n_inputs = 2;                 % the number of inputs (for my example one input is a constant protien production)
+Par.sim.Kal = false;                   % is the Kalman filter observer needed? set to 'true' if needed
 
-Par.Init_input.INPUT_act = [0 1]';    % initial inputs
+Par.Init_input.INPUT_act = [0 1]'; % initial inputs
 
 Par.ctrl.weights.alpha = 0;           % cost on the internal state errors
 Par.ctrl.weights.beta = 1;            % extra cost on the outputs
-Par.ctrl.weights.gamma = [0.05 0];    % cost on the input
+Par.ctrl.weights.gamma = [0 0];       % cost on the input
 Par.ctrl.Lb = [-1 1];                 % lower bound for the control input
-Par.ctrl.Ub = [1 1];                  % upper bound for the control input
+Par.ctrl.Ub = [0 1];                  % upper bound for the control input
 Par.ctrl.options = optimoptions...    % options for the quadratic solver 
     ('quadprog','display','none');    % which reduce the runtime of the 
                                       % programe, but will show no warning
@@ -76,7 +77,7 @@ Par.ctrl.options = optimoptions...    % options for the quadratic solver
 
 x_real = STATES.x_real; % Plant states
 INPUT_act = STATES.input; % input profiles
-t = linspace(0,length(x_real(1,:))*Par.time.dt,length(x_real(1,:))); %time step of output states
+t = linspace(Par.time.dt,Par.time.Tend-Par.time.Ts,length(x_real(1,:))); %time step of output states
 tnp = linspace(0,Par.time.Tend,Par.time.Tend/Par.time.Ts); % time steps of the inputs
 set(0, 'DefaultLineLineWidth', 2);
 

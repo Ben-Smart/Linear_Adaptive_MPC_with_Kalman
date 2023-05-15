@@ -68,7 +68,7 @@ end
 
 R = diag(r);
 H = C'*Q*C + R;
-F = C'*Q*M;
+% F = C'*Q*M;
 
    %% Constraints
 
@@ -86,7 +86,8 @@ x_minus = I.*ones(1,N);     % to reduce the runtime the previous input is
 
 %% Solving the cost function
 
-f = (X'*F')';        % terms proportional to the inputs
+% f = (X'*F')';        % terms proportional to the inputs (Stactic tracking point reference)
+f = (M*x_e - Xref(:))'*Q*C;        % terms proportional to the inputs
 sqr = H;          % terms with a quadratic relationship to the input
 sqr=(sqr+sqr')/2; %added to ensure that no approximation errors result in a none symetic quadratic term
 

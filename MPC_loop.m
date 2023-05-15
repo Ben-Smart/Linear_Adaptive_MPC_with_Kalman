@@ -4,6 +4,7 @@ function [STATES, Par, endtime] = MPC_loop(Par, ref)
     Ts = Par.time.Ts; % sampling time
     dt = Par.time.dt; % ODE time step
     Tend = Par.time.Tend; % final time (h)
+    Kal = Par.sim.Kal;
     
     %inputs
     INPUT_act = Par.Init_input.INPUT_act; % initial input
@@ -61,16 +62,22 @@ function [STATES, Par, endtime] = MPC_loop(Par, ref)
         Z = [x_hat(:,end);I]; %vector of states and inputs
         
         [~,Z] = ode_solver(Z, tspan); % Plant simulation to the current inputs
+        if length(tspan) ==2
+            Z = Z([1 end],:);
+        end
         x_hat = Z(2:end,1:length(x_hat(:,1)))'; % actual state of the 
                                                 % system after the last step
+        
 
          x_real(:,(j-1)*(Ts/dt)+1:(j)*(Ts/dt))=x_hat; %the measured states 
                                                       % throughout the 
                                                       % plant simulation
-         x_esti(:,j+1)=x_hat(:,end); %The estimated current plant states 
-                                     %(Step needed if you are estimating 
-                                     % all the internal states froma few 
-                                     % output states)
+        if Kal == true
+          [x_obs, ~] = Observer(x_hat(1,end),x_esti(:,j),I,dt,Ts); %Kalman filter used as an observer
+          x_esti(:,j+1)=x_obs(:,end); %The estimated current plant states
+        else
+          x_esti(:,j+1)=x_hat(:,end); %The measured current plant states
+        end                            
                
         %% optimisation step of future prediction
         
